@@ -34,10 +34,11 @@ pkill anchor in gate.py falls back to the bare process name, and nothing
 in scripts/kit references the patches dir. The memtest_vulkan path is
 created by scripts/instance-bootstrap.sh from the carried tarball (2026-10-30).
 
-TODO: the T8 runtime pin syv-ai/qwen38-27b-rtx3090 @ 69ba4d06 died in an
-upstream history rewrite (GitHub API 422 on 2026-10-30) - re-pin to a
-content-anchored HyperQwen commit (start_qwen.sh env contract) and carry
-it in kit/upstream/ the same way.
+TODO: the T8 runtime re-pin above is DONE (2026-10-30): HyperQwen @
+`f382342` is content-anchored via the carried tarball + tree sha256;
+smoke.py verifies the tree hash (git fallback kept for legacy bundles).
+After the first good T8 run, fold the resolved engine revisions into
+recipe.json per the revision_policy fields.
 
 TODO: re-pin the four `rumdl-tables` vendors to upstream once their
 table-format commits land upstream, then delete the local branches.
@@ -64,6 +65,7 @@ kit/upstream/club-170hx/PROVENANCE.md.
 | club-170hx subset (qc scripts + recipe dir) | `6eeae24` | same bytes as the submodule; Apache-2.0; materialized to vendor/ by bootstrap |
 | gpu-burn source tarball                     | `0d19c94` | builds sm_80; installed as bin/gpu-burn/gpu-burn (dash = gate layout contract)  |
 | memtest_vulkan source tarball               | `cdd418a` | v0.5.0; placed at club qc memtest_vulkan/ path memtest-select.py resolves       |
+| qwen3.8 runtime tree (HyperQwen)            | `f382342` | content-anchored re-pin 2026-10-30 (69ba4d06 lost upstream); tree sha256 in recipe.json + fetch.sh |
 
 ## Driver stack
 

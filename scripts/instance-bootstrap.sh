@@ -215,10 +215,11 @@ build_torch_venv() {
   if "$TORCH_VENV/bin/python" -c 'import torch' >/dev/null 2>&1; then
     log "torch already importable in $TORCH_VENV"
   else
-    log "pip: torch==2.13.0+cu130 (download.pytorch.org; retries on)"
+    log "pip: torch==2.13.0+cu130 + numpy (download.pytorch.org/PyPI; retries on)"
     "$TORCH_VENV/bin/pip" install --retries 10 --timeout 90 \
       --index-url https://download.pytorch.org/whl/cu130 \
-      'torch==2.13.0+cu130' || die "torch install"
+      --extra-index-url https://pypi.org/simple \
+      'torch==2.13.0+cu130' numpy || die "torch install"
   fi
   "$TORCH_VENV/bin/python" -c 'import torch; print("torch", torch.__version__)'
   log "export TG_MATMUL_PYTHON=$TORCH_VENV/bin/python"

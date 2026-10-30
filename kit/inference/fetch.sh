@@ -13,11 +13,13 @@ set -euo pipefail
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
 RECIPE="$REPO/kit/inference/recipe.json"
 LOCK="$REPO/kit/inference/requirements.lock"
-# Renamed upstream: syv-ai/qwen38-27b-rtx3090 -> syv-ai/HyperQwen. The old
-# name redirects and the pin 69ba4d06 is verified reachable through it, so
-# we keep cloning the historical name the recipe pins.
-RUNTIME_REPO="https://github.com/syv-ai/qwen38-27b-rtx3090"
-RUNTIME_PIN="69ba4d0688c6ae76cb9d3c4a5c3b36445e1b040c"
+# Runtime: carried tarball, content-pinned (2026-10-30). The historical
+# git pin syv-ai/qwen38-27b-rtx3090@69ba4d06 died in an upstream history
+# rewrite (repo renamed to HyperQwen, GitHub API 422) - cloning is no
+# longer possible or needed: kit/upstream/qwen38-runtime-f382342.tar.gz
+# carries the tree, pinned by RUNTIME_TREE_SHA256 below.
+RUNTIME_TREE_SHA256="0fac4d2d0224e9f181c2e1807654e1b0a4955305abdeec9f7f6dae1049ec5578"
+RUNTIME_TARBALL="$REPO/kit/upstream/qwen38-runtime-f382342.tar.gz"
 PREPARE="$REPO/vendor/club-170hx/recipes/qwen3.8-27b-dflash2/prepare_pinned_models.py"
 
 usage() {
@@ -38,9 +40,9 @@ wheelhouse (torch cu13 stack + vLLM + flashinfer) is ~5 GB. The
 throwaway fetch venv is removed by default; the HF cache stays at
 <kit-root>/.hf-cache, outside the manifest.
 Pinned downloads: the vLLM stack wheels (requirements.lock + torch
-2.13.0), the runtime repo syv-ai/qwen38-27b-rtx3090 @ 69ba4d06, and the
-three pinned model snapshots (base / fast overlay / draft) via the
-club prepare_pinned_models.py. Writes manifest-inference.sha256 for
+2.13.0), the runtime tree (carried tarball, content-pinned - no GitHub),
+and the three pinned model snapshots (base / fast overlay / draft) via
+the club prepare_pinned_models.py. Writes manifest-inference.sha256 for
 stand-side verification (install.sh refuses a corrupt kit).
 Safe to re-run: completed steps are skipped.
 EOF
@@ -84,17 +86,24 @@ else
   touch "$MARKER"
 fi
 
-# --- 2. runtime repo at the pin ----------------------------------------------
-if [ -d "$RUNTIME_DIR/.git" ] \
-    && [ "$(git -C "$RUNTIME_DIR" rev-parse HEAD)" = "$RUNTIME_PIN" ]; then
-  log "runtime: already at the pin $RUNTIME_PIN"
+# --- 2. runtime tree at the content pin ---------------------------------------
+runtime_tree_hash() {
+  (cd "$1" && find . -type f ! -path './models/*' ! -path './.git/*' -print0 \
+    | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+}
+if [ -d "$RUNTIME_DIR" ] \
+    && [ "$(runtime_tree_hash "$RUNTIME_DIR")" = "$RUNTIME_TREE_SHA256" ]; then
+  log "runtime: already at the content pin"
 else
-  log "runtime: cloning $RUNTIME_REPO @ $RUNTIME_PIN"
+  log "runtime: extracting the carried tarball (kit/upstream; no GitHub)"
+  [ -f "$RUNTIME_TARBALL" ] || die "runtime tarball missing: $RUNTIME_TARBALL"
   rm -rf "$RUNTIME_DIR"
-  mkdir -p "$(dirname "$RUNTIME_DIR")"
-  git clone "$RUNTIME_REPO" "$RUNTIME_DIR" || die "runtime clone failed"
-  git -C "$RUNTIME_DIR" checkout --detach "$RUNTIME_PIN" \
-    || die "runtime pin $RUNTIME_PIN not found upstream"
+  mkdir -p "$(dirname "$RUNTIME_DIR")" "$RUNTIME_DIR"
+  tar xzf "$RUNTIME_TARBALL" -C "$RUNTIME_DIR" --strip-components=1 \
+    || die "runtime tarball extract failed"
+  got=$(runtime_tree_hash "$RUNTIME_DIR")
+  [ "$got" = "$RUNTIME_TREE_SHA256" ] \
+    || die "runtime tree hash mismatch: got $got - re-vendor the tarball"
 fi
 
 # --- 3. pinned model snapshots (the club acquisition path) --------------------

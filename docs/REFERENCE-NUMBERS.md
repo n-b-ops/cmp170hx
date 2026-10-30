@@ -33,6 +33,29 @@ Short, dated answers to "what do we do and why". Numbers and full context
 live in the sections below; nothing here overrides CONTRACT.md. Newest
 first.
 
+### 2026-10-30 — T8 runtime re-pinned content-anchored; matmul numpy gap
+
+Two battle-test catches from the vast.ai session, both fixed same day:
+
+1. The T8 runtime pin syv-ai/qwen38-27b-rtx3090 @ `69ba4d06` died in an
+   upstream history rewrite (repo renamed HyperQwen; GitHub API 422 on
+   the old SHA). Re-pin: HyperQwen @ `f382342` carried as
+   `kit/upstream/qwen38-runtime-f382342.tar.gz`, pinned by a content tree
+   sha256 (`0fac4d2d…ec5578`, files LC_ALL=C-sorted, `models/` and `.git/`
+   excluded) enforced identically by fetch.sh and smoke.py (git-sha
+   fallback kept for legacy bundles); kit recipe.json gains
+   `runtime_tree_sha256` and cites the dead club pin inside its
+   `runtime_pin` string - tests/test_thresholds.py allows exactly this
+   documented divergence, nothing else. The start_qwen.sh env contract
+   (SPEC/CTX/MAX_SEQS/GPU_UTIL) is unchanged at the new pin [measured:
+   script inspected at pin].
+2. matmul_check.py imports numpy; the bootstrap --torch venv and the
+   MANIFEST s5 wheelhouse recipe installed only torch+pyyaml, so T5 died
+   instantly (ModuleNotFoundError) on the first live run - an
+   environment failure the gate correctly refused to call a card fault.
+   Fixed: bootstrap installs numpy, MANIFEST s5/item 8 updated; the
+   standalone rerun passed in 4m38s [measured, evidence/…-matmul-verify].
+
 ### 2026-10-30 — rented-instance bring-up goes GitHub-free (kit/upstream)
 
 The 2026-10-30 vast.ai session measured mid-stream death of every bulk

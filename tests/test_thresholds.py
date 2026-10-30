@@ -122,9 +122,21 @@ def run(verdicts, gate, mr, contract):
         ROOT, "vendor", "club-170hx", "recipes", "qwen3.8-27b-dflash2",
         "recipe.json")))
     for field in ("model_revision", "runtime_pin", "requirements_sha256"):
-        if kit_rc["source_of_record"][field] != club_rc[field]:
-            fails.append(f"kit recipe {field} diverged from the club "
-                         f"recipe of record")
+        if kit_rc["source_of_record"][field] == club_rc[field]:
+            continue
+        # Documented exception (2026-10-30 re-pin): the club runtime pin
+        # 69ba4d06 died in an upstream history rewrite (GitHub API 422);
+        # the kit recipe carries a content-anchored HyperQwen re-pin. The
+        # divergence is allowed ONLY when the kit recipe still cites the
+        # club pin verbatim inside its runtime_pin string AND pins the
+        # replacement tree by sha256 (REFERENCE-NUMBERS s0, PINS.md).
+        if (field == "runtime_pin"
+                and club_rc[field].split(";")[0]
+                in kit_rc["source_of_record"][field]
+                and kit_rc["source_of_record"].get("runtime_tree_sha256")):
+            continue
+        fails.append(f"kit recipe {field} diverged from the club "
+                     f"recipe of record")
     for dep, ver in club_rc["runtime_dependencies"].items():
         if kit_rc["verify_versions"].get(dep) != ver:
             fails.append(f"kit recipe verify_versions diverged: {dep}")

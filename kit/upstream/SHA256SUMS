@@ -1,11 +1,17 @@
 f7a4f36c10e3041d6a7994f1285422ef18238848d14b3b158a976f49ca835410  ./club-170hx/LICENSE
+de282b9f4185340f46457332d8688a3865328784c91b490378f35786517a6ede  ./club-170hx/PROVENANCE.md
 657cc11e63ce20cdfe1f5e195a42a67cc366a61e6650995fe82a3c2757ab68dc  ./club-170hx/recipes/qwen3.8-27b-dflash2/live_benchmark.py
 d3fa9bf015f7b0c01d8a374b736e77da9becc3fba9be153a5f14820b92a06a8d  ./club-170hx/recipes/qwen3.8-27b-dflash2/live_support.py
 c08cf0757c94f537b74f2cb990d4ecc24c4c851b4e8e40b6ed7b8dd80365a7f2  ./club-170hx/recipes/qwen3.8-27b-dflash2/prepare_pinned_models.py
+994e3003ef55d703cc8421ad5b8f0c1922e15060ce59647bac61e513da8885f4  ./club-170hx/recipes/qwen3.8-27b-dflash2/__pycache__/live_benchmark.cpython-314.pyc
+76121db29aeccbe44d77fd06e9206f7390b18607fe909330ea3efc8b54718851  ./club-170hx/recipes/qwen3.8-27b-dflash2/__pycache__/live_support.cpython-314.pyc
+9bc93b63163c64a309cf8cc74decf109007b4d62ab81559898ef9c41d023e937  ./club-170hx/recipes/qwen3.8-27b-dflash2/__pycache__/prepare_pinned_models.cpython-314.pyc
 de2036f61bd1bbcf92abf62643f7db5109b1cde710ab7a93e7aeb6b77fc007cc  ./club-170hx/recipes/qwen3.8-27b-dflash2/recipe.json
 65cde73f949184560692e2a29062a52ef690c9847b796c0274df36ab52c77973  ./club-170hx/recipes/qwen3.8-27b-dflash2/requirements.lock
 3c42323b318861ec137b620efad072ceed6fa59b6b52398eab818e232f49b23b  ./club-170hx/scripts/qc/compare_vram.cu
 81569728424ee3f0277feedfe678c3df16c851f227cad6ccf665d04f212b676a  ./club-170hx/scripts/qc/memtest-select.py
 5148f8750e35b24ca0b94d7a31b55636f3c441c8a140d97e0e3bed0698de47ed  ./club-170hx/scripts/qc/pcie-check.sh
+9c74ebbb662056f098b8c7e8207f8a8f6f53a7ab7c38eb5ad589a0d1efb566be  ./club-170hx/scripts/qc/__pycache__/memtest-select.cpython-314.pyc
 490fe36c192d9c3c53b403e0e576d9c8c99652ce72463422d2fa61d2e9dd8a72  ./gpu-burn-0d19c94.tar.gz
 6b71f045a7f6c31091ee219beee55c27cb5691ad2f8eae821b78855e4e6f3d67  ./memtest_vulkan-cdd418a.tar.gz
+4e0dd151ed4be8e31c21aabc20f91d1b0d7b30a7ad94e3e331ad88114469ba74  ./qwen38-runtime-f382342.tar.gz

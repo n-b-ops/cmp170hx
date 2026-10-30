@@ -67,12 +67,36 @@ def run_smoke(args, recipe, runtime, venv, ev, receipt, server_box):
     kit = Path(args.kit_root)
     # --- verified stack: versions, runtime pin, backport patches ---
     receipt["versions"] = verify_runtime_versions()
-    pin = recipe["source_of_record"]["runtime_pin"].split("@")[1].split(";")[0]
-    head = subprocess.run(["git", "-C", str(runtime), "rev-parse", "HEAD"],
-                          capture_output=True, text=True).stdout.strip()
-    if head != pin:
-        raise RuntimeError(f"runtime HEAD {head} != recipe pin {pin} - "
-                           f"re-run fetch.sh/install.sh")
+    tree_sha = recipe["source_of_record"].get("runtime_tree_sha256")
+    if tree_sha:
+        # content-anchored pin (2026-10-30 re-pin: the historical git pin
+        # died in an upstream history rewrite). Reproduces the fetch.sh
+        # runtime_tree_hash() formula: sha256 over the sha256sum lines of
+        # every file (./-relative, LC_ALL=C sorted), excluding models/ and
+        # .git/ - the runtime tree is a tarball extraction, not a clone.
+        entries = []
+        for p in runtime.rglob("*"):
+            if not p.is_file():
+                continue
+            rel = "./" + p.relative_to(runtime).as_posix()
+            parts = p.relative_to(runtime).parts
+            if parts[0] in ("models", ".git"):
+                continue
+            entries.append(rel)
+        inner = "".join(
+            f"{__import__('hashlib').sha256((runtime / e[2:]).read_bytes()).hexdigest()}  {e}\n"
+            for e in sorted(entries))
+        got = __import__("hashlib").sha256(inner.encode()).hexdigest()
+        if got != tree_sha:
+            raise RuntimeError(f"runtime tree hash {got} != recipe pin "
+                               f"{tree_sha} - re-run fetch.sh/install.sh")
+    else:
+        pin = recipe["source_of_record"]["runtime_pin"].split("@")[1].split(";")[0]
+        head = subprocess.run(["git", "-C", str(runtime), "rev-parse", "HEAD"],
+                              capture_output=True, text=True).stdout.strip()
+        if head != pin:
+            raise RuntimeError(f"runtime HEAD {head} != recipe pin {pin} - "
+                               f"re-run fetch.sh/install.sh")
     sp = subprocess.run(
         [str(venv / "bin" / "python"), "-c",
          "import vllm, os; print(os.path.dirname(vllm.__file__))"],
