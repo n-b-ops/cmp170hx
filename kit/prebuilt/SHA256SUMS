@@ -1,7 +1,10 @@
 23f545504efc3862fe46b94afafb2d8881135dfaa15701e0cb3f7dcded1c5311  ./compare-vram
 1baac94ce4bd153cbb0da2ce513738878dac92c0d4ccd0453c5d08bc447f4624  ./gpu-burn/compare.fatbin
 b2dbe8b1afb853d5c785b4cdfe1867686269a00a81fc3769f51d7377d2af2a3f  ./gpu-burn/gpu-burn
+e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e  ./lib/libvulkan.so.1
+1754effda1c1da5f5534ce221c1cea1b3187a00d0c4e63dd4a7b660c3d943488  ./lib/memtest-vulkan-wrapper.sh
+0034b439a49d500db3d6e7f2d945667e1f3b5f46d19a0b8ac58fced1d555b6e2  ./lib/nvidia_icd.json
 e1d2bdbb7db38b5f0acb9c90dd11b826ab31d1abaaaf109b6c3a7597552872f1  ./LICENSE-gpu-burn
 13c873c24398c37396ee79577ebc82ed8ebc6ace1ed0133f7c90971616f5401e  ./LICENSE-memtest_vulkan
 113f71787c842e8d5de4be070a223af7bb2f912b4f1279dd2c20953935fc8ca7  ./memtest_vulkan
-7244355b860583b4c8efc9a5610e54c37e7e45d494b23d7b7a88315e9b12de66  ./PROVENANCE.md
+ee7122dd23e90c9c84c0de6978c2d5c4f2a5754a307139bf3fe486cfe1255ccd  ./PROVENANCE.md

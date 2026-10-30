@@ -30,6 +30,11 @@
 | memtest_vulkan | libvulkan.so.1 at runtime via dlopen (vast images ship it; bare stands |
 |                | need `apt install libvulkan1`) + the NVIDIA Vulkan ICD                 |
 
+Also carried in lib/: the Vulkan loader itself (1.3.275, Apache-2.0),
+an nvidia ICD template, and the wrapper script the bootstrap installs
+when the host has no loader (hiveOS rigs) - substituted with the
+absolute lib/ path and exec'ing the real binary as memtest_vulkan.bin.
+
 First exercised by the 2026-10-30 vast.ai battle-test session (gate intake +
 express profile). If a future driver/CUDA break ever invalidates them,
 `instance-bootstrap.sh --force-build` regenerates everything from source.

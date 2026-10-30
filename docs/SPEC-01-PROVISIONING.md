@@ -71,6 +71,19 @@ itself — T1 becomes "verify the provider's unlock matches the verify.sh
 bands" (§4.4), and the kit wheelhouse (torch 2.13.0+cu130) is carried
 into a venv for matmul/inference.
 
+**hiveOS seller rigs.** The gate also runs on a hiveOS rig host (root
+ssh, python3 and nvidia-smi are present; dmesg is usually readable —
+the full Xid channel, unlike containers). Use the prebuilt bootstrap
+path (`scripts/instance-bootstrap.sh`): it needs no nvcc, no cargo and
+no apt — `kit/prebuilt/` carries the built tools, and when the image
+ships no vulkan loader (hiveOS images often do not) the bootstrap
+installs the carried loader + ICD behind a wrapper at the club qc
+memtest path. Two gaps remain by design: `gpu-burn` needs
+`libcublas.so.13` (mining images usually have CUDA runtime libs; if
+not, boot the kit's Ubuntu USB instead of hiveOS), and a rig keeping
+other cards mining still requires `--allow-shared-host` degraded mode
+(CONDITIONAL by contract).
+
 ### 2.2 Cooling — the instrument, not the background
 
 - **Forced front-to-back airflow through the heatsink fins is mandatory under

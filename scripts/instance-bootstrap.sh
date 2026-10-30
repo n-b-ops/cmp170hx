@@ -64,6 +64,11 @@ selftest() {
   if [ -f "$UP/../prebuilt/SHA256SUMS" ]; then
     (cd "$UP/../prebuilt" && sha256sum -c SHA256SUMS --quiet) \
       || die "kit/prebuilt checksum mismatch"
+    local listed found
+    listed=$(wc -l < "$UP/../prebuilt/SHA256SUMS")
+    found=$(find "$UP/../prebuilt" -type f ! -name SHA256SUMS | wc -l)
+    [ "$listed" = "$found" ] \
+      || die "kit/prebuilt drift: $listed checksummed vs $found present - regenerate SHA256SUMS"
   fi
   log "selftest OK: checksums, tarballs, carried scripts, prebuilt"
 }
@@ -129,9 +134,21 @@ install_prebuilt() {
       miss=1
     fi
   done
-  # dlopen'd deps are invisible to ldd: memtest_vulkan needs the loader.
-  ldconfig -p 2>/dev/null | grep -q libvulkan.so.1 \
-    || log "WARN: libvulkan.so.1 not in ldconfig - memtest_vulkan dlopens it; apt install libvulkan1"
+  # dlopen'd deps are invisible to ldd: memtest_vulkan dlopens the vulkan
+  # loader. Hosts without one (hiveOS seller rigs) get the carried loader
+  # (kit/prebuilt/lib, Apache-2.0) via the wrapper template; the carried
+  # ICD applies only when the system has no ICD of its own.
+  local MT_DST="$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/memtest_vulkan"
+  if ! ldconfig -p 2>/dev/null | grep -q libvulkan.so.1 \
+      && [ -f "$PB/lib/libvulkan.so.1" ] \
+      && [ -f "$PB/lib/memtest-vulkan-wrapper.sh" ]; then
+    mv "$MT_DST" "$MT_DST.bin"
+    sed "s|@KIT_LIB@|$PB/lib|g" "$PB/lib/memtest-vulkan-wrapper.sh" > "$MT_DST"
+    chmod +x "$MT_DST"
+    log "no system vulkan loader - wrapper + carried loader installed"
+  elif ! ldconfig -p 2>/dev/null | grep -q libvulkan.so.1; then
+    log "WARN: no system libvulkan.so.1 and none carried - memtest_vulkan will fail at runtime"
+  fi
   [ "$miss" = 0 ] \
     && log "prebuilt tools installed (checksums verified, ldd clean)" \
     || die "prebuilt libs unresolved - install the CUDA runtime/libvulkan1, or rerun with --force-build"
