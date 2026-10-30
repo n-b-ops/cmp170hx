@@ -31,7 +31,11 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -n "$RECIPE" ] || { usage >&2; exit 2; }
-case "$RECIPE" in /*) ;; *) RECIPE="$REPO/kit/inference/$RECIPE" ;; esac
+case "$RECIPE" in
+  /*) ;;
+  recipes/*) RECIPE="$REPO/kit/inference/$RECIPE" ;;
+  *) RECIPE="$REPO/kit/inference/recipes/$RECIPE" ;;
+esac
 [ -f "$RECIPE" ] || { echo "install-model: recipe not found: $RECIPE" >&2; exit 2; }
 log() { echo "install-model: $*"; }
 die() { echo "install-model: FAIL: $*" >&2; exit 1; }

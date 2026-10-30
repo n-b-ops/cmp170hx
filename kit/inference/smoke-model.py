@@ -193,9 +193,18 @@ def main():
     ap.add_argument("--warmup", type=int, default=1)
     args = ap.parse_args()
 
+    # Resolution mirrors the fetch/install bash trio: absolute path,
+    # recipes/<key>.json, bare <key>.json, or repo-relative path.
     rpath = Path(args.recipe)
     if not rpath.is_file():
-        rpath = RECIPES / args.recipe
+        for cand in (RECIPES / args.recipe,
+                     REPO / "kit" / "inference" / args.recipe):
+            if cand.is_file():
+                rpath = cand
+                break
+        else:
+            raise SystemExit(f"recipe not found: {args.recipe} (tried "
+                             f"absolute, recipes/, kit/inference/)")
     recipe = json.loads(rpath.read_text())
     key = recipe["key"]
     ev = Path(args.evidence_dir or f"evidence/info-{key}-{datetime.now():%Y%m%d}")
@@ -205,6 +214,7 @@ def main():
     kit = Path(args.kit_root)
     vpy = kit / ("venv-" + key) / "bin" / "python"
     if vpy.exists() and Path(sys.executable).resolve() != vpy.resolve():
+        os.environ["PYTHONUNBUFFERED"] = "1"  # nohup logs stay live
         os.execv(str(vpy), [str(vpy), str(Path(__file__).resolve()),
                             *sys.argv[1:]])
     if not vpy.is_file():

@@ -39,7 +39,11 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -n "$RECIPE" ] || { usage >&2; exit 2; }
-case "$RECIPE" in /*) ;; *) RECIPE="$REPO/kit/inference/$RECIPE" ;; esac
+case "$RECIPE" in
+  /*) ;;
+  recipes/*) RECIPE="$REPO/kit/inference/$RECIPE" ;;
+  *) RECIPE="$REPO/kit/inference/recipes/$RECIPE" ;;
+esac
 [ -f "$RECIPE" ] || { echo "fetch-model: recipe not found: $RECIPE" >&2; exit 2; }
 KIT_ROOT=$(mkdir -p "$KIT_ROOT" && cd "$KIT_ROOT" && pwd)
 log() { echo "fetch-model: $*"; }
