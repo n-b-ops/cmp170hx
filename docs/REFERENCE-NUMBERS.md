@@ -3,17 +3,27 @@
 > Convention (from the club repo): **measured** = reproduced from a pinned
 > receipt; **community-reported** = published without a verifiable receipt
 > chain; **inferred** = our reasoning; **untested** = plausible, never
-> exercised. Sources: club = club-170hx submodule @ `92328c0`; unlocker =
-> cmpunlocker submodule @ `bc2e727`; wiki = consensus-cmp170hx submodule @
-> `257e54f` (corpus freeze 2026-07-28); ninfer = ninfer-cmp170hx @ `7aba8c0`
+> exercised. Sources: club = club-170hx submodule @ `6eeae24`; unlocker =
+> cmpunlocker submodule @ `00fdf5c`; wiki = consensus-cmp170hx submodule @
+> `e1972a7` (corpus freeze 2026-07-28); ninfer = ninfer-cmp170hx @ `81b1166`
 > (upstream `2276286` + local table-format commit); recipe = cmp-170hx-vllm @
-> `69487ee` (upstream `192cc33` + local table-format commit — see README
+> `d176b35` (upstream `192cc33` + local table-format commit — see README
 > "Pinned sources" for the rumdl-tables policy); bench =
-> CMP-170hx-64gb-LLM-benchmarks @ `07d982f` (upstream `70306e5` + local
-> table-format commit); qwen-recipe = Qwen3.8-27B-CMP-170HX @ `be1172f`
+> CMP-170hx-64gb-LLM-benchmarks @ `0cbd9bd` (upstream `70306e5` + local
+> table-format commit); qwen-recipe = Qwen3.8-27B-CMP-170HX @ `7a6f83d`
 > (upstream `41d2c41` + local table-format commit — the receipt-chain repo
 > behind the club's §E anchor); lab docs = It-Still-Boots/cmp-170hx-docs @
 > `fcb27c0` (the 16-model performance sweep).
+>
+> Pin provenance (2026-10-30 restore): the pre-loss pins were club `92328c0`,
+> unlocker `bc2e727`, wiki `257e54f`, ninfer `7aba8c0`, recipe `69487ee`,
+> bench `07d982f`, qwen-recipe `be1172f`. Upstream histories no longer
+> contain those objects (rewritten); the replacements above are
+> content-anchored — club via recipe `requirements_sha256` + lock sha256
+> byte-equality, unlocker via the exact 5-driver `driver/VERSION` set with
+> install.sh/verify.sh/ecc-reporting.patch present, wiki via the corpus-freeze
+> date; the four rumdl-tables pins are fresh local `rumdl fmt -e MD060`
+> commits on the documented upstream pins (same construction, new hashes).
 >
 > Pins: PINS.md is canonical (submodules, tools, driver stack).
 
@@ -145,7 +155,7 @@ extension; the acceptance gate stays the Qwen3.8 recipe of record.
 | llama.cpp 27B Q4_K_M                                                                                                                                                                             | pp512 888.09 / tg128 36.87                                                                                                                                                                                                                                                                                                                                                                              | community-reported (wiki, one run)                                                                                   |
 | Roadmap-era Qwen figures — now identified: **cmp-170hx-vllm** recipe (Qwen3.8-27B-Int8 GPTQ + MTP k=3, prefix caching, single 64 GB Hynix card)                                                  | nightly: decode prose 65.4 (greedy) / 66.8 (temp 0.7) / structured 74.0 tok/s; MTP acceptance 3.02/4; TTFT 7K prefix 1.44 s cached / ~6.7 s cold; ctx 262,144 (fp8 KV). 0.27.1 fallback: 60.0/62.5/74.1, acceptance 3.12/4                                                                                                                                                                              | community-reported, now **pinned** (vendor/cmp-170hx-vllm @ 192cc33) — context only, not gates                       |
 | NOT usable as acceptance floors                                                                                                                                                                  | Ninfer 38.16 tok/s; megakernel GGUF 51–94; stock-FP32 anything                                                                                                                                                                                                                                                                                                                                          | measured (club) — different stacks                                                                                   |
-| **bench dataset @ 300 W OC VBIOS** (Qwen3.6 gen — one generation older than the club's Qwen3.8 anchor; vLLM 0.24.0, driver 610, batch 1, greedy, usage-object token counting, warmup discipline) | Qwen3.6-27B W8A8 int8 (29.1 GiB, native INT8 cutlass): tg 92.6–99.4 (MTP k=3; k=4 97–108), pp512 2619, pp2048 3472. W4A16 GPTQ g128 Marlin (18.1 GiB): tg 129.8–139.5 (MTP k=3), pp512 1581. 35B-A3B MoE W8A8 (39.8 GiB): tg 203.6–206.3 (MTP k=2, acceptance 66%), VRAM 60.4/65.5 GiB                                                                                                                  | community-reported (vendor/CMP-170hx-64gb-LLM-benchmarks @ 07d982f) — context only, not gates                        |
+| **bench dataset @ 300 W OC VBIOS** (Qwen3.6 gen — one generation older than the club's Qwen3.8 anchor; vLLM 0.24.0, driver 610, batch 1, greedy, usage-object token counting, warmup discipline) | Qwen3.6-27B W8A8 int8 (29.1 GiB, native INT8 cutlass): tg 92.6–99.4 (MTP k=3; k=4 97–108), pp512 2619, pp2048 3472. W4A16 GPTQ g128 Marlin (18.1 GiB): tg 129.8–139.5 (MTP k=3), pp512 1581. 35B-A3B MoE W8A8 (39.8 GiB): tg 203.6–206.3 (MTP k=2, acceptance 66%), VRAM 60.4/65.5 GiB                                                                                                                  | community-reported (vendor/CMP-170hx-64gb-LLM-benchmarks @ 0cbd9bd) — context only, not gates                        |
 | bench-dataset counterpoints                                                                                                                                                                      | (a) native INT8 tensor path works in vLLM 0.24 on this card — a newer-stack datapoint against the wiki's INT8-gating claim (§C); (b) `--gpu-memory-utilization 0.95` ran stably here, a counterexample to the wiki's ≤0.90 crash report — our T8 keeps ≤0.90 as the conservative rule; (c) MoE prefill is high-variance on untuned fused_moe configs — reinforces "different stacks are not comparable" | community-reported, single source                                                                                    |
 | Nemotron-3.5-Lightning-30B-A3B W4A16-fallback (vLLM)                                                                                                                                             | 227.7 tok/s @16k / 217.9 @64k (TTFT 1.7/7.8 s), 1,306 tok/s aggregate @32k×16, 79% decode retention @128k, speculation off @300 W; DSpark drafter 1.40–2.11×                                                                                                                                                                                                                                            | third-party lab (vendored cmp-170hx-docs @ fcb27c0) — context only, never a gate                                     |
 | Qwen3.6-35B-A3B-FP8 (vLLM 0.28.0)                                                                                                                                                                | short-context 355.7 tok/s / prefill 9,431 / TTFT 109 ms (single-stream, self-report); long-context 153.8 @16k / 135.9 @64k (TTFT 1.6/9.1 s) @300 W spec-off                                                                                                                                                                                                                                             | community-reported (LocalMaxxing) + third-party lab (vendored cmp-170hx-docs @ fcb27c0) — context only, never a gate |
