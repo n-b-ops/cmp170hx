@@ -79,10 +79,11 @@ mkdir -p ~/kit/cmp.170.hx/vendor/cmpunlocker/driver/.build
 cp ~/kit/ogkm/*.tar.gz ~/kit/cmp.170.hx/vendor/cmpunlocker/driver/.build/
 ```
 
-Restore the repo from the carried bundle (`repo/cmp.170.hx.bundle`), not a
-remote clone: four vendor pins (ninfer, vllm, benchmarks, qwen-recipe) sit
-on local `rumdl-tables` branches that exist only here and in the bundle —
-a `git clone --recurse-submodules` from a remote would miss them (PINS.md).
+Restore the repo from the carried bundle (`repo/cmp.170.hx.bundle`), or
+clone it from `github.com/n-b-ops/cmp170hx` when the stand has network:
+since the 2026-10-30 restore the vendor trees are tracked as plain files,
+so a plain clone is complete (no submodule fetch; kit/upstream +
+kit/prebuilt included).
 
 ## 5. Stand-side Python environment (T5/T8)
 

@@ -96,9 +96,11 @@ drifted. External tool pins (not submodules; carried in the kit):
 The ninfer, vllm, benchmarks, and qwen-recipe pins sit on local **`rumdl-tables`** branches (upstream
 commit + one markdown-table-alignment commit, per the vendor tables-only
 formatting policy in `.rumdl.toml`): re-pin to upstream when theirs lands an
-equivalent fmt commit. Until then these commits exist only locally — the kit
-bundle carries them; a plain `git clone --recurse-submodules` from a remote
-would not (this repo has no remote today).
+equivalent fmt commit. Since the 2026-10-30 restore the vendor trees are
+tracked as plain files in this repo (not gitlinks), and the repo is pushed
+to `github.com/n-b-ops/cmp170hx` — a plain `git clone` carries every
+vendor pin, the carried sources (kit/upstream) and the prebuilt tools
+(kit/prebuilt); no submodule or bundle fetch is needed.
 
 TODO: re-pin the rumdl-tables vendors (ninfer/vllm/benchmarks/qwen-recipe)
 to upstream when an equivalent table-format commit lands there, and delete
