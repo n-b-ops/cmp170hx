@@ -33,6 +33,23 @@ Short, dated answers to "what do we do and why". Numbers and full context
 live in the sections below; nothing here overrides CONTRACT.md. Newest
 first.
 
+### 2026-10-30 — battle-test session measured timelines (vast.ai, sm_80, 250 W provider cap)
+
+Express profile with `--memtest-min 15 --burn-min 5 --idle-min` default,
+clean end-to-end run (evidence/20261030-vast-fast2, receipts carry per-stage
+ts): intake 0:01 · idle 5:00 · mem_pattern 0:01 (62 GiB single pass) ·
+mem_retention 1:01 · mem_vulkan 6:01 (self-terminating under a 15-min
+budget) · burn 5:35 · matmul 4:27 · pcie <0:01 · warm_rerun 10:36 · **total
+32:48** [measured]. The ~2.5 h Express estimate in SPEC-01 s2.6 assumed a
+60-min memtest; memtest_vulkan's own pass loop ended at 6 min, so even a
+Standard-profile run will land far under estimate until re-measured.
+Burn 96.41-96.76 TFLOP/s at the 250 W provider cap (floors are calibrated
+at 180 W); matmul numerics bit-stable across runs, bf16_tflops +11.5%
+between cold and heat-soaked runs (clock plateau under the cap) - flagged,
+within expectation [measured]. Nemotron informational serving, first live
+exercise: decode256 212.09 / decode900 212.26 tok/s, prefill 37 544 tok/s,
+ttft 35.5 ms at 250 W vs 227.7/217.9 lab anchors at 300 W [measured].
+
 ### 2026-10-30 — T8 runtime re-pinned content-anchored; matmul numpy gap
 
 Two battle-test catches from the vast.ai session, both fixed same day:
