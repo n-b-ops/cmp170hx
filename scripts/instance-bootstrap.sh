@@ -128,10 +128,16 @@ install_prebuilt() {
   local b miss=0
   for b in "$REPO/bin/compare-vram" "$REPO/bin/gpu-burn/gpu-burn" \
            "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/memtest_vulkan"; do
-    if ldd "$b" 2>/dev/null | grep -q "not found"; then
+    # libcuda is EXCLUDED from the failure set: inside a container image
+    # (docker build) the driver is absent by design - the nvidia runtime
+    # injects it at `docker run --gpus` time.
+    if ldd "$b" 2>/dev/null | grep "not found" | grep -qv libcuda; then
       log "prebuilt $(basename "$b"): unresolved libs:"
-      ldd "$b" 2>/dev/null | grep "not found" | sed 's/^/    /'
+      ldd "$b" 2>/dev/null | grep "not found" | grep -v libcuda | sed 's/^/    /'
       miss=1
+    elif ldd "$b" 2>/dev/null | grep -q "libcuda.*not found"; then
+      log "prebuilt $(basename "$b"): libcuda unresolved here - expected in"
+      log "  container images (nvidia runtime injects it at run time)"
     fi
   done
   # dlopen'd deps are invisible to ldd: memtest_vulkan dlopens the vulkan

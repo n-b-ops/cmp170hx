@@ -65,7 +65,7 @@ kit/upstream/club-170hx/PROVENANCE.md.
 | club-170hx subset (qc scripts + recipe dir) | `6eeae24` | same bytes as the submodule; Apache-2.0; materialized to vendor/ by bootstrap |
 | gpu-burn source tarball                     | `0d19c94` | builds sm_80; installed as bin/gpu-burn/gpu-burn (dash = gate layout contract)  |
 | memtest_vulkan source tarball               | `cdd418a` | v0.5.0; placed at club qc memtest_vulkan/ path memtest-select.py resolves       |
-| qwen3.8 runtime tree (HyperQwen)            | `f382342` | content-anchored re-pin 2026-10-30 (69ba4d06 lost upstream); tree sha256 in recipe.json + fetch.sh |
+| qwen3.8 runtime tree (HyperQwen)            | `7105f2e` | content-anchored re-pin 2026-10-30 (69ba4d06 lost upstream); newest commit pinning vllm==0.27.1 = the club lock; tree sha256 in recipe.json + fetch.sh |
 
 ## Driver stack
 

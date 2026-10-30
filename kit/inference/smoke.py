@@ -101,11 +101,18 @@ def run_smoke(args, recipe, runtime, venv, ev, receipt, server_box):
         [str(venv / "bin" / "python"), "-c",
          "import vllm, os; print(os.path.dirname(vllm.__file__))"],
         capture_output=True, text=True).stdout.strip()
-    arg_utils = os.path.join(sp, "vllm", "engine", "arg_utils.py")
-    with open(arg_utils) as f:
-        if "dflash2-backport" not in f.read():
+    # sp is the vllm PACKAGE dir (dirname(vllm.__file__) = .../site-packages/vllm):
+    # engine/arg_utils.py hangs directly under it - the old double-vllm
+    # join (.../vllm/vllm/engine/...) never existed [battle-test catch
+    # 2026-10-30: FileNotFoundError before the marker grep could run].
+    # Patch-applied verification for the 7105f2e generation: no literal
+    # marker comment exists - the patch's distinctive symbol is
+    # _is_dflash2_draft in config/vllm.py [verified applied 2026-10-30].
+    marker_file = os.path.join(sp, "config", "vllm.py")
+    with open(marker_file) as f:
+        if "_is_dflash2_draft" not in f.read():
             raise RuntimeError("vLLM dflash2 backport patches not applied "
-                               f"({arg_utils}) - run kit/inference/install.sh")
+                               f"({marker_file}) - run kit/inference/install.sh")
 
     # --- fail-closed preflight: right device, unlocked, temps safe ---
     receipt["device"] = preflight_snapshot(args.gpu)

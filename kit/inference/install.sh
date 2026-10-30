@@ -122,7 +122,7 @@ log "installing the locked stack offline (no index)"
 
 # --- 5. vLLM dflash2 backport patches (the onstart-v9 sequence) ------------------
 SP=$("$VENV/bin/python" -c 'import vllm, os; print(os.path.dirname(vllm.__file__))')
-if grep -q dflash2-backport "$SP/vllm/engine/arg_utils.py" 2>/dev/null; then
+if grep -q _is_dflash2_draft "$SP/config/vllm.py" 2>/dev/null; then
   log "vLLM patches: already applied"
 else
   log "applying the runtime vLLM patches"

@@ -16,10 +16,13 @@ LOCK="$REPO/kit/inference/requirements.lock"
 # Runtime: carried tarball, content-pinned (2026-10-30). The historical
 # git pin syv-ai/qwen38-27b-rtx3090@69ba4d06 died in an upstream history
 # rewrite (repo renamed to HyperQwen, GitHub API 422) - cloning is no
-# longer possible or needed: kit/upstream/qwen38-runtime-f382342.tar.gz
-# carries the tree, pinned by RUNTIME_TREE_SHA256 below.
-RUNTIME_TREE_SHA256="0fac4d2d0224e9f181c2e1807654e1b0a4955305abdeec9f7f6dae1049ec5578"
-RUNTIME_TARBALL="$REPO/kit/upstream/qwen38-runtime-f382342.tar.gz"
+# longer possible or needed. Pin selection matters: the runtime tree's
+# patches/ must match the locked vLLM - 7105f2e is the newest HyperQwen
+# commit with docker/requirements.txt pinning vllm==0.27.1 (the club
+# recipe of record's lock); the newer HEAD (0.32-era patches) fails
+# install.sh's patch step by design [measured 2026-10-30].
+RUNTIME_TREE_SHA256="a4e8881914cf03dd78a49ea2281edbca08f891175f4d9e147630870c67d196dc"
+RUNTIME_TARBALL="$REPO/kit/upstream/qwen38-runtime-7105f2e.tar.gz"
 PREPARE="$REPO/vendor/club-170hx/recipes/qwen3.8-27b-dflash2/prepare_pinned_models.py"
 
 usage() {
@@ -107,16 +110,29 @@ else
 fi
 
 # --- 3. pinned model snapshots (the club acquisition path) --------------------
+# The runtime's docker/prepare.sh hardcodes its container layout (cd /app,
+# PATH=/app/venv/bin): outside their compose rig, provide both as symlinks
+# (verified 2026-10-30: fetch failed with CalledProcessError until /app
+# existed; bare-metal stands are root, containers running this script are).
+if [ ! -e /app ]; then
+  ln -s "$RUNTIME_DIR" /app 2>/dev/null \
+    || die "cannot symlink /app -> $RUNTIME_DIR (need root): sudo ln -s $RUNTIME_DIR /app"
+fi
+ln -sfn "${FETCH_VENV:-$KIT_ROOT/.fetch-venv}" "$RUNTIME_DIR/venv"
 if [ -f "$RUNTIME_DIR/models/Qwen3.8-27B-W4A16-AutoRound-fast/model.safetensors.index.json" ] \
     && [ -f "$RUNTIME_DIR/models/Qwen3.8-27B-DFlash2-W4A16/config.json" ]; then
   log "models: prepared tree already present"
 else
   log "models: running the club prepare_pinned_models.py (network; ~23 GB of pinned snapshots)"
   FETCH_VENV="$KIT_ROOT/.fetch-venv"
-  rm -rf "$FETCH_VENV"
-  python3.12 -m venv "$FETCH_VENV" || die "cannot create the fetch venv"
-  "$FETCH_VENV/bin/pip" install --upgrade pip wheel \
-    || die "cannot bootstrap pip in the fetch venv"
+  # Reuse a working fetch venv across re-runs (fetch-model.sh does the
+  # same): the runtime requirements install is minutes of wheels, and a
+  # killed fetch used to restart it from zero every attempt.
+  if [ ! -x "$FETCH_VENV/bin/python" ]; then
+    python3.12 -m venv "$FETCH_VENV" || die "cannot create the fetch venv"
+    "$FETCH_VENV/bin/pip" install --upgrade pip wheel \
+      || die "cannot bootstrap pip in the fetch venv"
+  fi
   "$FETCH_VENV/bin/pip" install -r "$RUNTIME_DIR/docker/requirements.txt" \
     || die "cannot install the runtime requirements (the exact set docker/prepare.sh expects)"
   export HF_HOME="$KIT_ROOT/.hf-cache"

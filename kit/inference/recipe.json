@@ -4,8 +4,8 @@
   "source_of_record": {
     "recipe": "vendor/club-170hx @ 92328c0 recipes/qwen3.8-27b-dflash2/recipe.json",
     "model_revision": "base 1f05c441c4e64ae0549de44fa9ea5a6d43610314; fast overlay 124c14e7e8c7d2f5402933b9af368e772a9fcf0c; draft 4d30ec736ffc6b8688dc2ae2b502d9b48bdec279",
-    "runtime_pin": "syv-ai/HyperQwen@f382342d749690e0a83a75348a48f355623e23d2; vLLM 0.27.1 (content-anchored re-pin 2026-10-30: predecessor syv-ai/qwen38-27b-rtx3090@69ba4d0688c6ae76cb9d3c4a5c3b36445e1b040c lost to an upstream history rewrite, GitHub API 422)",
-    "runtime_tree_sha256": "0fac4d2d0224e9f181c2e1807654e1b0a4955305abdeec9f7f6dae1049ec5578",
+    "runtime_pin": "syv-ai/HyperQwen@7105f2ec2988b5dadbc7cf3e5baa11a740c00b1d; vLLM 0.27.1 (content-anchored re-pin 2026-10-30: predecessor syv-ai/qwen38-27b-rtx3090@69ba4d0688c6ae76cb9d3c4a5c3b36445e1b040c lost to an upstream history rewrite, GitHub API 422; 7105f2e = newest commit whose docker/requirements.txt pins vllm==0.27.1, matching the club lock)",
+    "runtime_tree_sha256": "a4e8881914cf03dd78a49ea2281edbca08f891175f4d9e147630870c67d196dc",
     "requirements_sha256": "65cde73f949184560692e2a29062a52ef690c9847b796c0274df36ab52c77973",
     "measured_anchor": "136.38 decode tok/s mean (3 cards), 1946 input tok/s prefill @ 180 W"
   },
