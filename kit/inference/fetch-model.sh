@@ -46,8 +46,11 @@ log() { echo "fetch-model: $*"; }
 die() { echo "fetch-model: FAIL: $*" >&2; exit 1; }
 
 read -r KEY MREPO MREV ENGINE_VER <<EOF
-$(python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); print(r["key"], r["model"]["repo"], r["model"].get("revision") or "", r["engine"]["version"])' "$RECIPE")
+$(python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); print(r["key"], r["model"]["repo"], r["model"].get("revision") or "-", r["engine"]["version"])' "$RECIPE")
 EOF
+# "-" = revision null in the recipe (pin-at-first-fetch policy): resolve
+# the default branch head at fetch time and record it in REVISION.txt.
+[ "$MREV" = "-" ] && MREV=""
 [ -n "$KEY" ] && [ -n "$MREPO" ] && [ -n "$ENGINE_VER" ] \
   || die "cannot parse recipe (key/model.repo/engine.version)"
 WHEELS="$KIT_ROOT/wheelhouse-$KEY"
