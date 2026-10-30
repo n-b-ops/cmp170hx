@@ -1,6 +1,8 @@
-# NOTE: URLs are NOT in the recovered doc. Fill in each <UPSTREAM-URL>
-# from memory / the USB bundle's .gitmodules / the vendor repos' owners.
-# The pins (see PINS.md) are what matter for reproducibility.
+# URLs resolved 2026-10-30 via GitHub (repo-name + pin/content search).
+# The pre-loss URLs are not in any recovered doc; these resolve to the
+# vendors' current upstream repos. Pins are canonical in PINS.md (see the
+# pin-provenance note there); the four rumdl-tables pins exist only
+# locally - fetch them from the restore bundles (recovery/bundles/).
 [submodule "vendor/club-170hx"]
 	path = vendor/club-170hx
 	url = https://github.com/PixelML/club-170hx
