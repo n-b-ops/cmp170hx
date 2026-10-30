@@ -33,6 +33,21 @@ Short, dated answers to "what do we do and why". Numbers and full context
 live in the sections below; nothing here overrides CONTRACT.md. Newest
 first.
 
+### 2026-10-30 — T8 acceptance green on the rented card (re-pinned runtime)
+
+Qwen3.8-27B W4A16+DFlash2 via the packaged kit, all CONTRACT floors
+exceeded at the 250 W provider cap [measured, evidence/inference-20261030]:
+decode256 141.24 tok/s (anchor 136.38), decode900 130.24 (112), prefill
+2299.5 tok/s (1946), ttft 96.5 ms (250), load 315 s. The path to green
+surfaced five kit fixes (commit e977415), the structural one being the
+runtime re-pin discipline: the HyperQwen replacement pin must satisfy BOTH
+the start_qwen.sh env contract AND the vLLM patch vintage - 7105f2e is the
+newest commit whose docker/requirements.txt pins vllm==0.27.1 (the club
+lock); HEAD-era trees ship 0.32 patches and die at install. Second lesson:
+the club-era "dflash2-backport marker in arg_utils.py" contract does not
+exist in this generation - the verification symbol is _is_dflash2_draft in
+vllm/config/vllm.py.
+
 ### 2026-10-30 — battle-test session measured timelines (vast.ai, sm_80, 250 W provider cap)
 
 Express profile with `--memtest-min 15 --burn-min 5 --idle-min` default,
