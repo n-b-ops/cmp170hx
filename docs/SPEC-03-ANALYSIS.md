@@ -238,4 +238,3 @@ The seller-stand verdict is provisional. At home, within the return window:
 4. Register the card in the buyer's fleet health-watch: idle baseline + the
    same signals/cadence rules as club HEALTH-WATCH (per-session Xid check,
    post-incident tensor gate).
-

@@ -268,4 +268,3 @@ precisely so the code and this table move together. The shared engine
 lives in `scripts/verdicts.py` (constants, `classify_xid`, `classify_brake`,
 `stage_verdict`); gate.py and make-report.py import it, and contract_sync fails if
 either grows a local copy.
-

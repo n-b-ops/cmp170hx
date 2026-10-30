@@ -49,7 +49,7 @@ journey; each links to its detailed procedure.
 | [docs/CONTRACT.md](docs/CONTRACT.md)                         | **Authoritative stage contract**: exact pass/warn/fail signals enforced by gate.py and make-report.py                |
 | [docs/REFERENCE-NUMBERS.md](docs/REFERENCE-NUMBERS.md)       | Every anchor with its evidence label; §0 carries the dated decisions                                                 |
 | [docs/design.md](docs/design.md)                             | Design rationale: why Python, watchdog invariants, comment policy                                                    |
-| [docs/VENDORS.md](docs/VENDORS.md)                                     | What comes from where: every vendor's artifacts and where the pipeline uses them                        |
+| [docs/VENDORS.md](docs/VENDORS.md)                           | What comes from where: every vendor's artifacts and where the pipeline uses them                                     |
 | [kit/MANIFEST.md](kit/MANIFEST.md)                           | Offline test-kit manifest (what to download and carry to the seller)                                                 |
 
 ## Executable parts
@@ -149,4 +149,3 @@ convention of the club repo:
 
 The complete non-negotiable set - six rules, including the sole-GPU stand
 requirement and the Ctrl+C escape - is [SPEC-02 §0.2](docs/SPEC-02-TESTING.md).
-

@@ -106,4 +106,3 @@ current truth):
 | (absent) ECC mention                                             | The unlocker **synthesizes** ECC status at the RMAPI layer — not hardware proof                                                       |
 | (absent) single-rank fraud vector                                | Single-rank "fake 64 GB" cards **pass memtest_vulkan and fail CUDA pattern tests** — hence mem_pattern                                |
 | (absent) stand confounders                                       | Added: PWRBRK# check, module-shadowing check, x8 topology, OVMF-vs-SeaBIOS, power-cap reset                                           |
-

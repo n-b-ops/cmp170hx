@@ -7,16 +7,16 @@
 
 ## Submodules (vendor/)
 
-| Repo                                | Pin       | Branch                 | Notes                                                    |
-| ----------------------------------- | --------- | ---------------------- | -------------------------------------------------------- |
-| club-170hx                          | `6eeae24` | upstream               | QC methodology; compare_vram, memtest-select, pcie-check |
-| cmpunlocker                         | `00fdf5c` | upstream               | the unlock tool: driver patch, profiles, verify.sh       |
-| consensus-cmp170hx                  | `e1972a7` | upstream               | wiki (numbers, procedures, lessons)                      |
-| ninfer-cmp170hx                     | `81b1166` | `rumdl-tables` (local) | context only                                             |
-| cmp-170hx-vllm                      | `d176b35` | `rumdl-tables` (local) | context only                                             |
-| CMP-170hx-64gb-LLM-benchmarks       | `0cbd9bd` | `rumdl-tables` (local) | context only                                             |
-| Qwen3.8-27B-CMP-170HX (qwen-recipe) | `7a6f83d` | `rumdl-tables` (local) | REFERENCE-NUMBERS sE anchor receipts                     |
-| cmp-170hx-docs | `fcb27c0` | upstream | It-Still-Boots lab docs: the 16-model performance sweep (Nemotron W4A16 + Qwen3.6 FP8 anchors); docs-only reference, no explicit license at pin time |
+| Repo                                | Pin       | Branch                 | Notes                                                                                                                                                |
+| ----------------------------------- | --------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| club-170hx                          | `6eeae24` | upstream               | QC methodology; compare_vram, memtest-select, pcie-check                                                                                             |
+| cmpunlocker                         | `00fdf5c` | upstream               | the unlock tool: driver patch, profiles, verify.sh                                                                                                   |
+| consensus-cmp170hx                  | `e1972a7` | upstream               | wiki (numbers, procedures, lessons)                                                                                                                  |
+| ninfer-cmp170hx                     | `81b1166` | `rumdl-tables` (local) | context only                                                                                                                                         |
+| cmp-170hx-vllm                      | `d176b35` | `rumdl-tables` (local) | context only                                                                                                                                         |
+| CMP-170hx-64gb-LLM-benchmarks       | `0cbd9bd` | `rumdl-tables` (local) | context only                                                                                                                                         |
+| Qwen3.8-27B-CMP-170HX (qwen-recipe) | `7a6f83d` | `rumdl-tables` (local) | REFERENCE-NUMBERS sE anchor receipts                                                                                                                 |
+| cmp-170hx-docs                      | `fcb27c0` | upstream               | It-Still-Boots lab docs: the 16-model performance sweep (Nemotron W4A16 + Qwen3.6 FP8 anchors); docs-only reference, no explicit license at pin time |
 
 Pin provenance (2026-10-30 restore): pre-loss pins club `92328c0` /
 cmpunlocker `bc2e727` / consensus `257e54f` / ninfer `7aba8c0` / vllm
@@ -52,4 +52,3 @@ table-format commits land upstream, then delete the local branches.
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | Supported drivers (pinned unlocker HEAD, exact strings) | 615.78.08, 615.71.09, 610.57.04, 610.43.03, 610.43.02                                   |
 | Club-validated combination                              | Ubuntu 22.04 + kernel 6.8 + 610.43.03 open + cmpunlocker (bare metal or Q35+SeaBIOS VM) |
-

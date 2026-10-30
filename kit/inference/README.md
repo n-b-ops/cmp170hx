@@ -103,4 +103,3 @@ kit at stand-side run time. Convert to a single Python entry point only
 if a trigger fires: the manifest/version-gate logic grows another edge
 case (a second fallback, `~=` specifiers), the kit must be built on
 macOS/Windows, or the four scripts start drifting apart.
-

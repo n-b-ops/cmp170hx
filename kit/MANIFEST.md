@@ -113,4 +113,3 @@ On any x86-64 Linux box (a GPU is NOT required for this checklist):
    kit (manifest + lock sha + model tree); on any available GPU,
    `kit/inference/smoke.py` serves + one completion — proves the
    wheelhouse is complete.
-

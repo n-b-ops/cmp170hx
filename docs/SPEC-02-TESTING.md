@@ -520,4 +520,3 @@ item.
 3. Pack evidence: `make-report.py` → verify REPORT.md, copy bundle to two
    USB sticks. Photos of the card installed + removed.
 4. Card back into anti-static bag; verify no tools/adapter left on stand.
-

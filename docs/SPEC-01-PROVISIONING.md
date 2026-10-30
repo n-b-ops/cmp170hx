@@ -432,4 +432,3 @@ wall-clock numbers - stage-by-stage where the gate log carries them
 (gate.log timestamps every stage start and finish), and the profile
 totals from session start to report. Until then every "~" figure is
 planning guidance, not a measured anchor.
-
