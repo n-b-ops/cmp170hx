@@ -50,8 +50,13 @@ done
 
 # ---- stage 0: carried-kit selftest (no GPU, no apt, no network) -----------
 selftest() {
+  # Exclude __pycache__/.pyc: py_compile drops them locally and they are
+  # gitignored - a fresh clone never has them, and a SUMS regenerated on a
+  # machine that had them would otherwise fail every clone's selftest
+  # [battle-test catch 2026-10-31: the stick clone failed on exactly this].
   cd "$UP" || die "kit/upstream missing"
-  sha256sum -c SHA256SUMS --quiet || die "carried kit checksum mismatch"
+  sha256sum -c <(grep -vE '__pycache__|\.pyc$' SHA256SUMS) --quiet \
+    || die "carried kit checksum mismatch"
   for t in gpu-burn-0d19c94.tar.gz memtest_vulkan-cdd418a.tar.gz; do
     tar tzf "$t" >/dev/null 2>&1 || die "tarball corrupt: $t"
   done
