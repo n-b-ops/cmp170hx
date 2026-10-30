@@ -1,0 +1,11 @@
+evidence/
+bin/
+logs/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+kit-build/
+.hf-cache/
+*.raw.log
+receipts.prev-*/

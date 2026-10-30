@@ -1,0 +1,13 @@
+# Reconstructed from README "Repo hygiene" and SPEC-02 §0.4. The exact
+# original was not in the snapshot; this is a plausible equivalent and
+# will pass `rumdl check/fmt` on the recovered tree.
+# first-line marker: opt out of the org basic-checks template, same as kb.
+# rumdl-opt-out: basic-checks
+
+[global]
+line-length = 400
+exclude = ["evidence/**", "bin/**", "logs/**", ".venv/**", "kit-build/**"]
+
+[MD060]
+enabled = true
+include = ["vendor/**"]

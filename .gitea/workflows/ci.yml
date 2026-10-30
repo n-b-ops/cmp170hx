@@ -1,0 +1,26 @@
+# Reconstructed from README "Repo hygiene". The exact original was not
+# in the snapshot.
+name: ci
+on: [push, pull_request]
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # NOTE: the four rumdl-tables pins (ninfer/vllm/benchmarks/qwen-recipe)
+          # are LOCAL-ONLY commits. `submodules: recursive` will try to
+          # check out remote commits and fail. Either set those pins to
+          # their upstream commits in PINS.md, or provide the branch as a
+          # locally-bundled .bundle and unpack it in this step.
+      - name: rumdl (lint)
+        run: rumdl check -c .rumdl.toml .
+      - name: rumdl (fmt check)
+        run: rumdl fmt --check -c .rumdl.toml .
+      - name: py_compile (glob)
+        run: python3 -m py_compile scripts/*.py tests/*.py kit/inference/*.py
+      - name: bash -n (glob)
+        run: for f in scripts/*.sh kit/inference/*.sh; do bash -n "$f"; done
+      - name: contract sync suite
+        run: python3 tests/contract_sync.py

@@ -1,0 +1,27 @@
+# NOTE: URLs are NOT in the recovered doc. Fill in each <UPSTREAM-URL>
+# from memory / the USB bundle's .gitmodules / the vendor repos' owners.
+# The pins (see PINS.md) are what matter for reproducibility.
+[submodule "vendor/club-170hx"]
+	path = vendor/club-170hx
+	url = <UPSTREAM-URL>
+[submodule "vendor/cmpunlocker"]
+	path = vendor/cmpunlocker
+	url = <UPSTREAM-URL>
+[submodule "vendor/consensus-cmp170hx"]
+	path = vendor/consensus-cmp170hx
+	url = <UPSTREAM-URL>
+[submodule "vendor/ninfer-cmp170hx"]
+	path = vendor/ninfer-cmp170hx
+	url = <UPSTREAM-URL>
+[submodule "vendor/cmp-170hx-vllm"]
+	path = vendor/cmp-170hx-vllm
+	url = <UPSTREAM-URL>
+[submodule "vendor/CMP-170hx-64gb-LLM-benchmarks"]
+	path = vendor/CMP-170hx-64gb-LLM-benchmarks
+	url = <UPSTREAM-URL>
+[submodule "vendor/Qwen3.8-27B-CMP-170HX"]
+	path = vendor/Qwen3.8-27B-CMP-170HX
+	url = <UPSTREAM-URL>
+[submodule "vendor/cmp-170hx-docs"]
+	path = vendor/cmp-170hx-docs
+	url = https://github.com/It-Still-Boots/cmp-170hx-docs
