@@ -33,6 +33,30 @@ Short, dated answers to "what do we do and why". Numbers and full context
 live in the sections below; nothing here overrides CONTRACT.md. Newest
 first.
 
+### 2026-10-30 — rented-instance bring-up goes GitHub-free (kit/upstream)
+
+The 2026-10-30 vast.ai session measured mid-stream death of every bulk
+git clone toward the rented box (club-170hx retry loop: `early EOF`,
+`fetch-pack: unexpected disconnect`) while apt (Ubuntu mirror) and
+one-shot codeload tarball downloads from the home link stayed healthy
+[measured, session log]. Decision: session-time scripts no longer clone
+anything. `kit/upstream/` carries the club subset the gate and T8 kit
+actually import (Apache-2.0, pin `6eeae24`, per-file sha256 in
+`kit/upstream/SHA256SUMS`, provenance in
+`kit/upstream/club-170hx/PROVENANCE.md`) plus the pinned gpu-burn and
+memtest_vulkan source tarballs; `scripts/instance-bootstrap.sh`
+materializes `vendor/club-170hx` from it and builds the three tools
+(`--selftest` verifies the carried kit on a GPU-less host). Two layout
+contracts the docs left implicit are now encoded in the bootstrap:
+upstream `gpu_burn` installs as `bin/gpu-burn/gpu-burn` (dash - the
+gate's documented layout), and `memtest_vulkan` lands at
+`vendor/club-170hx/scripts/qc/memtest_vulkan/memtest_vulkan` (the
+MEMTEST_BIN path memtest-select.py resolves; the club pin lacks that
+directory in every current-upstream commit - known drift, now created).
+The T8 runtime pin syv-ai/qwen38-27b-rtx3090 @ `69ba4d06` died in an
+upstream history rewrite (GitHub API 422 on 2026-10-30) - re-pin pending
+(PINS.md TODO), which blocks Tier-B T8 until it lands.
+
 ### 2026-10-26 — T1 memory WARN band machine-enforced (8 GB SKU)
 
 SPEC-03 §5 always documented a T1 WARN band — 60000–65535 MiB unlocked

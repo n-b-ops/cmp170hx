@@ -386,7 +386,11 @@ extended = ~230 GB total (rent 260 GB).
 
 ### 8.3 Session runbook (the battle test itself)
 
-1. `scripts/setup-container.sh` - record its verdict and flags.
+1. `scripts/instance-bootstrap.sh --torch` - materializes
+   `vendor/club-170hx` from `kit/upstream/`, builds compare-vram,
+   gpu-burn and memtest_vulkan (no GitHub; `--selftest` verifies the
+   carried kit on a GPU-less host), builds the gate venv, then runs
+   `scripts/setup-container.sh` - record its verdict and flags.
 2. `gate.py --profile smoke --allow-shared-host [--allow-no-dmesg]`
    (~20-30 min): intake, mem_pattern, 5-min burn, matmul, pcie - the
    first end-to-end exercise of the round-14 hardening.

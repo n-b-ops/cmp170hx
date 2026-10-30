@@ -25,10 +25,14 @@ Tier B (item 9) is optional per SPEC-02 §T8; skip it for the Express profile.
 
 Item version pins here are convenience copies — [PINS.md](../PINS.md) is
 canonical; update both together. Rented-container instances: this
-bare-metal kit does not apply as-is — run `scripts/setup-container.sh`
+bare-metal kit does not apply as-is — run `scripts/instance-bootstrap.sh`
+(materializes `vendor/club-170hx` from `kit/upstream/`, builds
+compare-vram/gpu-burn/memtest_vulkan with no GitHub access, optionally
+builds the torch venv via `--torch`, then runs `scripts/setup-container.sh`)
 and see SPEC-01 §8 (rented instances); the wheelhouse (item 8) is the
 piece to carry over (installed into a venv inside the container's CUDA
-base, validated per §6 the same way).
+base, validated per §6 the same way — or bootstrapped on-instance from
+download.pytorch.org, which is not a GitHub dependency).
 
 ## 2. Layout on the stick
 

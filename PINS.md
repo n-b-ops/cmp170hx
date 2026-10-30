@@ -31,7 +31,13 @@ layout drift at the club pin: `scripts/qc/memtest_vulkan/memtest_vulkan`
 and `recipes/qwen3.8-27b-dflash2/patches/` (documented in VENDORS.md from
 the pre-loss tree) do not exist in ANY current-upstream club commit; the
 pkill anchor in gate.py falls back to the bare process name, and nothing
-in scripts/kit references the patches dir.
+in scripts/kit references the patches dir. The memtest_vulkan path is
+created by scripts/instance-bootstrap.sh from the carried tarball (2026-10-30).
+
+TODO: the T8 runtime pin syv-ai/qwen38-27b-rtx3090 @ 69ba4d06 died in an
+upstream history rewrite (GitHub API 422 on 2026-10-30) - re-pin to a
+content-anchored HyperQwen commit (start_qwen.sh env contract) and carry
+it in kit/upstream/ the same way.
 
 TODO: re-pin the four `rumdl-tables` vendors to upstream once their
 table-format commits land upstream, then delete the local branches.
@@ -45,6 +51,19 @@ table-format commits land upstream, then delete the local branches.
 | compare_vram / memtest-select / pcie-check | club-170hx @ `6eeae24` scripts/qc/ (compare_vram: build sm_80)                          | submodule                                                       |
 | torch (T5/T8)                              | 2.13.0 + cu130 wheel (offline wheelhouse in kit)                                        | club gate measured on this exact version (REF_BAND calibration) |
 | vLLM (T8)                                  | 0.27.1 + pinned patch set per club recipe.json (kit package: kit/inference/recipe.json) | club recipes/qwen3.8-27b-dflash2                                |
+
+## Carried sources (kit/upstream/)
+
+Run-time copies of exactly what the gate and T8 kit import - no git, no
+github.com at session time (2026-10-30 decision, REFERENCE-NUMBERS s0).
+Checksums: kit/upstream/SHA256SUMS; provenance:
+kit/upstream/club-170hx/PROVENANCE.md.
+
+| Item                                        | Pin       | Notes                                                                          |
+| ------------------------------------------- | --------- | ------------------------------------------------------------------------------ |
+| club-170hx subset (qc scripts + recipe dir) | `6eeae24` | same bytes as the submodule; Apache-2.0; materialized to vendor/ by bootstrap |
+| gpu-burn source tarball                     | `0d19c94` | builds sm_80; installed as bin/gpu-burn/gpu-burn (dash = gate layout contract)  |
+| memtest_vulkan source tarball               | `cdd418a` | v0.5.0; placed at club qc memtest_vulkan/ path memtest-select.py resolves       |
 
 ## Driver stack
 

@@ -65,7 +65,10 @@ scripts/
 ├── matmul_check.py   tensor-core fingerprint + determinism + BF16 throughput gate (T5)
 ├── make-report.py    evidence bundle → REPORT.md with the acceptance verdict table + fingerprint.json
 ├── compare-fingerprints.py  reference-vs-candidate fingerprint diff (flags deltas >5%)
-└── setup-container.sh rented-container preflight: visibility, driver whitelist, unlock band, dmesg
+├── setup-container.sh rented-container preflight: visibility, driver whitelist, unlock band, dmesg
+└── instance-bootstrap.sh GitHub-free rented-instance bring-up: vendors club subset from
+                      kit/upstream/, builds compare-vram/gpu-burn/memtest_vulkan, torch venv (--torch);
+                      --selftest verifies the carried kit on a GPU-less host
 ```
 
 The gate reuses building blocks from the pinned `club-170hx` submodule
@@ -73,7 +76,10 @@ The gate reuses building blocks from the pinned `club-170hx` submodule
 `pcie-check.sh`; and `matmul_check.py` descends from the club `tensor-gate.sh`)
 rather than forking them. Build or place external binaries
 (`gpu-burn`, `memtest_vulkan`) next to the scripts per
-[kit/MANIFEST.md](kit/MANIFEST.md) before running.
+[kit/MANIFEST.md](kit/MANIFEST.md) before running - or run
+[scripts/instance-bootstrap.sh](scripts/instance-bootstrap.sh), which
+does all of it from the carried sources in [kit/upstream/](kit/upstream/)
+with no GitHub access (rented instances; SPEC-01 s8).
 
 **T5 needs torch**: plain `python3` on a fresh stand has none — build the kit
 venv ([kit/MANIFEST.md §5](kit/MANIFEST.md)) and export
