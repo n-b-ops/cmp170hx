@@ -1091,12 +1091,19 @@ def main():
                     help="tool directory (default $BIN or <repo>/bin)")
     ap.add_argument("--matmul-python", default=os.environ.get("TG_MATMUL_PYTHON"),
                     help="interpreter with torch for matmul (default $TG_MATMUL_PYTHON)")
+    ap.add_argument("--idle-min", type=int, default=0,
+                    help="override the profile's idle-baseline minutes (0 = profile "
+                         "default; SPEC-02 keeps >=5 min for seller-stand runs - "
+                         "shorten only for rented quick checks where the thermal "
+                         "baseline has less bearing)")
     args = ap.parse_args()
     g = Gate(args)
     if args.memtest_min:
         g.memtest_min = args.memtest_min
     if args.burn_min:
         g.burn_min = args.burn_min
+    if args.idle_min:
+        g.idle_min = args.idle_min
     sys.exit(g.run())
 
 
