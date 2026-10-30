@@ -1030,9 +1030,11 @@ class Gate:
         try:
             self.preflight()
             self.start_session()
-            for name in STAGES:
-                if not self.stage_enabled(name):
-                    continue
+            enabled = [n for n in STAGES if self.stage_enabled(n)]
+            for i, name in enumerate(enabled, 1):
+                # Exact progress, no estimates: position within THIS run's
+                # stage list (profile/skip/only already filtered it).
+                self.log(f"[{i}/{len(enabled)}] {name}")
                 getattr(self, f"stage_{name}")()
             self.check_ring_wrap()
             self.log(f"stages complete. xid_fatal={self.xid_totals_since_start()['fatal']} "
