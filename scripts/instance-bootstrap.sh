@@ -11,11 +11,14 @@
 #   bin/compare-vram                nvcc -arch=sm_80 from the carried .cu
 #   bin/gpu-burn/gpu-burn           from kit/upstream/gpu-burn-0d19c94.tar.gz
 #   vendor/club-170hx/scripts/qc/memtest_vulkan/memtest_vulkan
-#                                   from kit/upstream/memtest_vulkan-cdd418a.tar.gz
+#                                   cargo build --release from
+#                                   kit/upstream/memtest_vulkan-cdd418a.tar.gz
 #   then runs scripts/setup-container.sh and prints the gate command line.
 #
 # Usage: scripts/instance-bootstrap.sh [--selftest] [--gpu N] [--no-apt]
-#                                     [--torch] [--torch-venv DIR]
+#                                     [--torch] [--torch-venv DIR] [--force-build]
+#   --force-build   rebuild tools from kit/upstream sources instead of
+#                   installing the kit/prebuilt binaries (default)
 #   --selftest      verify the carried kit only; works on a GPU-less host:
 #                   SHA256SUMS, tarball integrity, carried script syntax.
 #   --no-apt        skip the apt stage (build deps already installed)
@@ -31,12 +34,13 @@ LOG_PREFIX="[bootstrap $(date +%H:%M:%S)]"
 log() { echo "$LOG_PREFIX $*"; }
 die() { echo "$LOG_PREFIX FAIL: $*" >&2; exit 1; }
 
-SELFTEST=0 NO_APT=0 TORCH=0 GPU=0 TORCH_VENV="$REPO/venv-gate"
+SELFTEST=0 NO_APT=0 TORCH=0 GPU=0 FORCE_BUILD=0 TORCH_VENV="$REPO/venv-gate"
 while [ $# -gt 0 ]; do
   case "$1" in
     --selftest) SELFTEST=1; shift ;;
     --no-apt) NO_APT=1; shift ;;
     --torch) TORCH=1; shift ;;
+    --force-build) FORCE_BUILD=1; shift ;;
     --gpu) GPU=$2; shift 2 ;;
     --torch-venv) TORCH_VENV=$2; shift 2 ;;
     -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
@@ -57,7 +61,11 @@ selftest() {
            scripts/xid-watch.py; do
     [ -f "$REPO/$f" ] || die "repo script missing: $f"
   done
-  log "selftest OK: checksums, tarballs, carried scripts"
+  if [ -f "$UP/../prebuilt/SHA256SUMS" ]; then
+    (cd "$UP/../prebuilt" && sha256sum -c SHA256SUMS --quiet) \
+      || die "kit/prebuilt checksum mismatch"
+  fi
+  log "selftest OK: checksums, tarballs, carried scripts, prebuilt"
 }
 
 # ---- stage 1: vendor/ materialization --------------------------------------
@@ -77,7 +85,7 @@ materialize_vendor() {
 apt_deps() {
   log "apt: build deps"
   apt-get update -qq >/dev/null 2>&1 || log "apt update failed (offline?)"
-  local pkgs="build-essential cmake libvulkan-dev libvulkan1 glslang-tools pciutils"
+  local pkgs="build-essential cargo libvulkan-dev libvulkan1 glslang-tools pciutils"
   # cublas headers: match the installed CUDA toolkit major-minor (e.g.
   # /usr/local/cuda-13.3 -> libcublas-dev-13-3), fall back to the unversioned
   # package when the versioned one is absent from the mirror.
@@ -95,7 +103,41 @@ apt_deps() {
   apt-get install -y -qq $pkgs >/dev/null 2>&1 || log "apt: some deps failed - builds will tell"
 }
 
-# ---- stage 3: builds --------------------------------------------------------
+# ---- stage 3a: prebuilt install (default: no toolchain needed) -------------
+install_prebuilt() {
+  local PB="$REPO/kit/prebuilt"
+  [ -f "$PB/SHA256SUMS" ] || { log "prebuilt: no kit/prebuilt - source build"; return 1; }
+  (cd "$PB" && sha256sum -c SHA256SUMS --quiet) \
+    || { log "prebuilt: checksum mismatch - source build"; return 1; }
+  local f
+  for f in compare-vram gpu-burn/gpu-burn gpu-burn/compare.fatbin memtest_vulkan; do
+    [ -f "$PB/$f" ] || { log "prebuilt: missing $f - source build"; return 1; }
+  done
+  mkdir -p "$REPO/bin/gpu-burn" "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan"
+  cp "$PB/compare-vram" "$REPO/bin/" \
+    && cp "$PB/gpu-burn/gpu-burn" "$PB/gpu-burn/compare.fatbin" "$REPO/bin/gpu-burn/" \
+    && cp "$PB/memtest_vulkan" "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/" \
+    || return 1
+  chmod +x "$REPO/bin/compare-vram" "$REPO/bin/gpu-burn/gpu-burn" \
+    "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/memtest_vulkan"
+  local b miss=0
+  for b in "$REPO/bin/compare-vram" "$REPO/bin/gpu-burn/gpu-burn" \
+           "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/memtest_vulkan"; do
+    if ldd "$b" 2>/dev/null | grep -q "not found"; then
+      log "prebuilt $(basename "$b"): unresolved libs:"
+      ldd "$b" 2>/dev/null | grep "not found" | sed 's/^/    /'
+      miss=1
+    fi
+  done
+  # dlopen'd deps are invisible to ldd: memtest_vulkan needs the loader.
+  ldconfig -p 2>/dev/null | grep -q libvulkan.so.1 \
+    || log "WARN: libvulkan.so.1 not in ldconfig - memtest_vulkan dlopens it; apt install libvulkan1"
+  [ "$miss" = 0 ] \
+    && log "prebuilt tools installed (checksums verified, ldd clean)" \
+    || die "prebuilt libs unresolved - install the CUDA runtime/libvulkan1, or rerun with --force-build"
+}
+
+# ---- stage 3b: source builds (fallback, --force-build) ---------------------
 build_tools() {
   local cuda_bin="${CUDA_HOME:-/usr/local/cuda}/bin"
   command -v nvcc >/dev/null 2>&1 || [ -x "$cuda_bin/nvcc" ] \
@@ -122,18 +164,29 @@ build_tools() {
   cp /tmp/rb-gpu-burn/compare.fatbin "$REPO/bin/gpu-burn/" || die "compare.fatbin missing"
   log "gpu-burn installed (gpu_burn -> bin/gpu-burn/gpu-burn)"
 
-  log "build memtest_vulkan (v0.5.0)"
+  log "build memtest_vulkan (v0.5.0, cargo)"
   rm -rf /tmp/rb-memtest
   mkdir -p /tmp/rb-memtest
   tar xzf "$UP/memtest_vulkan-cdd418a.tar.gz" -C /tmp/rb-memtest --strip-components=1
-  (cd /tmp/rb-memtest && mkdir -p b && cd b && cmake .. >/tmp/rb-memtest.log 2>&1 \
-      && make -j"$(nproc)" >>/tmp/rb-memtest.log 2>&1) \
-    || { tail -5 /tmp/rb-memtest.log; die "memtest_vulkan build"; }
+  # Rust project (not cmake): cargo build --release makes
+  # target/release/memtest_vulkan; deps come from crates.io (a package
+  # mirror, not github). Retry: crates.io fetches can drop mid-stream on
+  # flaky instance uplinks; cargo caches, so retries converge.
+  local mt_rc=1
+  for i in 1 2 3; do
+    (cd /tmp/rb-memtest && cargo build --release >/tmp/rb-memtest.log 2>&1) \
+      && { mt_rc=0; break; }
+    log "memtest_vulkan cargo attempt $i failed - retrying"
+    tail -3 /tmp/rb-memtest.log || true
+  done
+  [ "$mt_rc" = 0 ] \
+    || { tail -8 /tmp/rb-memtest.log; die "memtest_vulkan build"; }
   # memtest-select.py resolves MEMTEST_BIN relative to itself - the binary
   # must sit inside the (materialized) club tree at exactly this path.
   mkdir -p "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan"
-  cp /tmp/rb-memtest/b/memtest_vulkan \
-    "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/" || die "memtest_vulkan artifact"
+  cp /tmp/rb-memtest/target/release/memtest_vulkan \
+    "$REPO/vendor/club-170hx/scripts/qc/memtest_vulkan/" \
+    || die "memtest_vulkan artifact"
   log "memtest_vulkan placed at club qc path"
 }
 
@@ -162,8 +215,10 @@ fi
 
 log "start: repo=$REPO"
 materialize_vendor
-[ "$NO_APT" = 0 ] && apt_deps
-build_tools
+if [ "$FORCE_BUILD" = 1 ] || ! install_prebuilt; then
+  [ "$NO_APT" = 0 ] && apt_deps
+  build_tools
+fi
 if [ "$TORCH" = 1 ]; then build_torch_venv; fi
 
 if command -v nvidia-smi >/dev/null 2>&1; then
@@ -172,7 +227,7 @@ if command -v nvidia-smi >/dev/null 2>&1; then
   log "gate command line:"
   echo "  cd $REPO && export TG_MATMUL_PYTHON=$TORCH_VENV/bin/python"
   echo "  python3 scripts/gate.py --profile express --memtest-min 15 --burn-min 5"
-  echo "      --gpu $GPU --power-w $(nvidia-smi --query-gpu=power.limit --format=csv,noheader,nounits -i $GPU)"
+  echo "      --gpu $GPU --power-w $(nvidia-smi --query-gpu=power.limit --format=csv,noheader,nounits -i $GPU | cut -d. -f1)"
   echo "      --allow-no-dmesg [--allow-shared-host if setup-container says >1 GPU]"
 else
   log "no nvidia-smi - GPU stages skipped (selftest/builds only)"
