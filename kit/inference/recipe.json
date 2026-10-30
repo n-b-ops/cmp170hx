@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "title": "Qwen3.8-27B W4A16 + DFlash2 on CMP 170HX - kit package of the club recipe of record",
+  "source_of_record": {
+    "recipe": "vendor/club-170hx @ 92328c0 recipes/qwen3.8-27b-dflash2/recipe.json",
+    "model_revision": "base 1f05c441c4e64ae0549de44fa9ea5a6d43610314; fast overlay 124c14e7e8c7d2f5402933b9af368e772a9fcf0c; draft 4d30ec736ffc6b8688dc2ae2b502d9b48bdec279",
+    "runtime_pin": "syv-ai/qwen38-27b-rtx3090@69ba4d0688c6ae76cb9d3c4a5c3b36445e1b040c; vLLM 0.27.1",
+    "requirements_sha256": "65cde73f949184560692e2a29062a52ef690c9847b796c0274df36ab52c77973",
+    "measured_anchor": "136.38 decode tok/s mean (3 cards), 1946 input tok/s prefill @ 180 W"
+  },
+  "python": "3.12",
+  "verify_versions": {
+    "vllm": "0.27.1",
+    "torch": "2.13.0",
+    "transformers": "5.15.0",
+    "tokenizers": "0.22.2",
+    "huggingface_hub": "1.27.0",
+    "flashinfer-python": "0.6.16.post3",
+    "flashinfer-cubin": "0.6.13"
+  },
+  "wheels_note": "kit/inference/requirements.lock is a byte-exact copy of the club lock (its sha256 must equal source_of_record.requirements_sha256 - enforced by tests); fetch.sh additionally downloads torch==2.13.0 and pip/wheel/setuptools for the offline venv",
+  "models": {
+    "base": {"repo": "dbirks/Qwen3.8-27B-W4A16-AutoRound", "revision": "1f05c441c4e64ae0549de44fa9ea5a6d43610314"},
+    "fast_overlay": {"repo": "syvai/qwen3.8-27b-3090-fast-variant", "revision": "124c14e7e8c7d2f5402933b9af368e772a9fcf0c"},
+    "draft": {"repo": "syvai/Qwen3.8-27B-DFlash2-W4A16", "revision": "4d30ec736ffc6b8688dc2ae2b502d9b48bdec279"},
+    "layout": {
+      "base": "models/Qwen3.8-27B-W4A16-AutoRound",
+      "fast": "models/Qwen3.8-27B-W4A16-AutoRound-fast",
+      "draft": "models/Qwen3.8-27B-DFlash2-W4A16"
+    },
+    "prepare": "vendor/club-170hx/recipes/qwen3.8-27b-dflash2/prepare_pinned_models.py --runtime-root <runtime> --model-root <runtime>/models"
+  },
+  "serve": {
+    "launcher": "single-user/start_qwen.sh (from the runtime repo root)",
+    "env": {"SPEC": "dflash2", "CTX": "fast", "MAX_SEQS": "1", "DFLASH_TOKENS": "7", "GPU_UTIL": "0.90", "KV_MEM": ""},
+    "port": 18020,
+    "health_path": "/health",
+    "served_model_name": "qwen3.8-27b",
+    "context_len": 65536,
+    "api_key_env": "VLLM_API_KEY"
+  },
+  "benchmark": {
+    "protocol": "vendor live_benchmark.py (usage-token-counted-v1: tokens from the final usage object, never stream-event counts)",
+    "cases": [
+      {"name": "decode256", "prompt": "story", "max_tokens": 256},
+      {"name": "decode900", "prompt": "story", "max_tokens": 900},
+      {"name": "prefill_long", "prompt": "long ~6.6K tokens", "max_tokens": 8}
+    ],
+    "warmup": 1,
+    "samples": 3
+  },
+  "floors": {"decode256": 130, "decode900": 112, "prefill": 1750, "ttft_ms": 250},
+  "floors_semantics": "fail below 0.9x floor (above 1.11x for ttft_ms, lower-is-better); 0.9x..floor (floor..1.11x for ttft_ms) records a warn; CONTRACT.md T8 row",
+  "cautions": [
+    "gpu_memory_utilization 0.95 crashes this stack - the pinned launcher env uses 0.90",
+    "the cmp-170hx-vllm serving recipe is validated Hynix-only (Samsung memory: community-reported Xid 79 under sustained inference load)",
+    "record host load with every T8 result - the 47-tok/s outlier was host contention + pinned KV, not the card",
+    "sm80 DFlash2 runtime Xid 31 reports on driver 610.43.02 (HyperQwen issues 72 and 98, both closed): sustained decode wedged the card in minutes at any k, while SPEC=mtp ran 9h+; a third box on driver 610.57.04 could NOT reproduce either fault (docs/reproductions/cmp-170hx-64gb.md, same sha-69ba4d0 image + W4A16-AutoRound-fast) - prefer 610.43.03/610.57.04 for T8 and treat any Xid 31 as fatal (the smoke guard stops the run and the gate counts it)",
+    "W4A16/W8A16 Marlin checkpoints wedge GA100 at LOAD time with Xid 31 (vendored cmp-170hx-vllm warning) - only the pinned AutoRound + DFlash2 path is receipt-chained"
+  ],
+  "upstream_note": "the runtime repo was renamed syv-ai/qwen38-27b-rtx3090 -> syv-ai/HyperQwen; the old name redirects and the pin 69ba4d06 is verified reachable there (2026-10-26), so fetch.sh keeps cloning the historical name"
+}
+

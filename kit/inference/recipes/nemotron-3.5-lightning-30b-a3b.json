@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "key": "nemotron-3.5-lightning-30b-a3b",
+  "classification": "informational - community/lab-anchored serving recipe, never a CONTRACT acceptance floor",
+  "model": {
+    "repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+    "revision": null,
+    "revision_policy": "pinned at fetch time by fetch-model.sh (recorded in models/<key>/REVISION.txt and the manifest); set a hash here once a first good run is recorded",
+    "weights_gb": 22.1,
+    "license": "OpenMDW-1.1 (permissive; verify on the model card at fetch time)",
+    "notes": "hybrid Mamba-2 + MoE + Attention, 30B total / ~3B active (128 experts, 6 active), built-in MTP; the NVFP4 checkpoint deploys on Ampere (sm_80) via documented W4A16 fallback kernels - that fallback path is what the anchors measured. Alternative W4A16-only quants exist (GotoAI-Inc 20.49 GB; useful-quants 16.60 GiB g64) - unverified by us."
+  },
+  "engine": {
+    "name": "vllm",
+    "version": ">=0.28.0",
+    "version_policy": "minimum - the official vLLM recipe's mamba/humming/async flags postdate 0.27.x; exact wheel re-pinned in REVISION.txt after the first successful launch (smoke-model fails loudly on unknown flags)"
+  },
+  "serve": {
+    "argv": [
+      "vllm", "serve", "@MODEL_DIR@",
+      "--served-model-name", "nemotron-3.5-lightning-30b-a3b",
+      "--host", "127.0.0.1",
+      "--mamba-backend", "flashinfer",
+      "--mamba-cache-mode", "align",
+      "--enable-prefix-caching",
+      "--kv-cache-dtype", "fp8",
+      "--quantization", "modelopt_fp4",
+      "--moe-backend", "humming",
+      "--linear-backend", "humming",
+      "--mamba-ssu-algorithm", "horizontal",
+      "--async-scheduling",
+      "--max-num-seqs", "256",
+      "--max-num-batched-tokens", "32768",
+      "--gpu-memory-utilization", "0.90"
+    ],
+    "env": {},
+    "port_default": 18031,
+    "notes": "flags from the official vLLM recipe (recipes.vllm.ai); + GPU_UTIL 0.90 added per our <=0.90 conservative rule"
+  },
+  "speculative": {
+    "method": "DSpark",
+    "draft_repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4-DSpark",
+    "draft_size": "967M-param dense GQA drafter (~small vs the 30B target)",
+    "status": "not wired into smoke-model v1 - the anchors are speculation-off; per the lab matrix DSpark is the best method on this card (1.40-2.11x across 1k-128k, ~1.53x @16k -> ~349 tok/s implied) and would be the first extension"
+  },
+  "benchmark": {
+    "protocol": "vendor live_benchmark.py (usage-token-counted-v1) - the same three cases as the acceptance recipe",
+    "cases": "decode256 (story) / decode900 (story) / prefill_long (~6.6k)",
+    "comparability_note": "anchors were measured with coding-style prompts at 16k/64k depth, 1024/2048-token outputs, speculation off - our standard three cases are for cross-model and cross-card comparison within OUR protocol only"
+  },
+  "anchors": {
+    "sources": [
+      "tmp/nemotron.30b.a3b.md (in-repo research doc, 2026-10-26)",
+      "https://it-still-boots.github.io/cmp-170hx-docs/performance/overview/",
+      "https://recipes.vllm.ai/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "https://docs.api.nvidia.com/nim/reference/nvidia-nemotron-3-5-lightning-30b-a3b"
+    ],
+    "long_context": {
+      "decode16k_tok_s": 227.7, "ttft16k_s": 1.7,
+      "decode64k_tok_s": 217.9, "ttft64k_s": 7.8,
+      "config": "W4A16 fallback, vLLM, 300 W, speculation off, coding prompts (1024/2048-token outputs)",
+      "label": "third-party lab sweep (it-still-boots.github.io) - the fastest model measured on this card"
+    },
+    "batch": {"aggregate_tok_s_32k_x16": 1306, "label": "third-party lab sweep"},
+    "retention": {"decode_retention_128k_vs_1k_pct": 79, "label": "third-party lab sweep (Mamba-2 linear-time layers)"},
+    "headline": "fastest model measured on the CMP 170HX in the lab sweep; the tensor-core-gated GA100 favors its 3B-active hybrid architecture and the W4A16 weight path"
+  },
+  "cautions": [
+    "engine flags are from the official recipe and newer than our acceptance stack (vLLM 0.27.1): smoke-model runs on a dedicated venv-<key>; an unknown flag aborts the launch - re-pin the wheel and record it",
+    "W4A16 here is the Ampere FALLBACK of the NVFP4 checkpoint, not native FP4 math",
+    "the anchors are 300 W lab numbers; our sessions run at a 180 W cap - expect proportionally lower absolute tok/s (the acceptance recipe lost ~5% from 255 W to 180 W)",
+    "thermal: passively cooled card - the fail-closed guard stops the smoke at 80/85 C",
+    "DSpark/MTP would lift decode but the anchor methodology is speculation-off; keep baselines comparable",
+    "engine pin is vllm-ONLY (>= minimum, not a lock): torch/transformers/flashinfer float with vllm's deps, so informational numbers are not auditable across engine micro-versions - re-pin a verify_versions block if cross-session auditability is ever needed"
+  ]
+}
+

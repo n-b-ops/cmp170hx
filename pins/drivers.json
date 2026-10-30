@@ -1,0 +1,6 @@
+{
+  "comment": "Machine source for the unlocker's supported-driver whitelist, read by scripts/setup-container.sh. The canonical pin list is PINS.md (Driver stack); the strings are owned by the cmpunlocker vendor (driver/VERSION). Update all three together - tests/test_thresholds.py enforces the PINS.md sync.",
+  "supported_drivers": ["615.78.08", "615.71.09", "610.57.04", "610.43.03", "610.43.02"],
+  "club_validated": "610.43.03"
+}
+
