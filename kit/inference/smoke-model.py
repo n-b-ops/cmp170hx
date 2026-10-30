@@ -135,6 +135,14 @@ def run_model_smoke(args, recipe, runtime_box, ev, receipt):
             super().__init__(base_url, api_key, safety_check)
             self.served = served
 
+        # The club Benchmark hardcodes model "qwen3.8-27b" in every body
+        # (token_count, stream_completion) - vLLM 404s unknown model names.
+        # Rewrite at the single choke point instead of per-method copies.
+        def post(self, path, body, timeout=600):
+            if isinstance(body, dict) and body.get("model") != self.served:
+                body = {**body, "model": self.served}
+            return super().post(path, body, timeout)
+
         def token_count(self, prompt):
             req = urllib.request.Request(
                 self.base_url + "/tokenize",

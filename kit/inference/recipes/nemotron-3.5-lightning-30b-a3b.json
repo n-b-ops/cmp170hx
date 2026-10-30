@@ -27,6 +27,7 @@
       "--quantization", "modelopt_fp4",
       "--moe-backend", "humming",
       "--linear-backend", "humming",
+      "--mamba-ssu-algorithm", "simple",
       "--async-scheduling",
       "--max-num-seqs", "256",
       "--max-num-batched-tokens", "32768",
@@ -34,7 +35,7 @@
     ],
     "env": {},
     "port_default": 18031,
-    "notes": "flags from the official vLLM recipe (recipes.vllm.ai) minus --mamba-ssu-algorithm horizontal: BOTH ssu variants require SM90 (flashinfer kernel_selective_state_update_stp.cuh:1342, 'Vertical/horizontal require FLASHINFER_MAMBA_ENABLE_SM90') - fatal at cudagraph capture on our sm_80 card [measured 2026-10-30, evidence info-nemotron-...-20261030]; + GPU_UTIL 0.90 added per our <=0.90 conservative rule"
+    "notes": "flags from the official vLLM recipe (recipes.vllm.ai), with --mamba-ssu-algorithm horizontal -> simple: BOTH default ssu variants require SM90 (flashinfer kernel_selective_state_update_stp.cuh:1342, 'Vertical/horizontal require FLASHINFER_MAMBA_ENABLE_SM90') - fatal at cudagraph capture on our sm_80 card [measured 2026-10-30]. A/B on the rented 170HX: explicit simple vs omitting the flag are identical within noise (decode256 212.09 vs 212.08 tok/s, prefill 37544 vs 37870 tok/s) - simple is kept EXPLICIT so the kernel path stays pinned against engine-default drift. + GPU_UTIL 0.90 added per our <=0.90 conservative rule"
   },
   "speculative": {
     "method": "DSpark",
